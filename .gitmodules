@@ -25,3 +25,6 @@
 [submodule "fuel/packages/shared"]
 	path = fuel/packages/shared
 	url = https://github.com/TeamPalmTree/shared
+[submodule "public/assets/shared"]
+	path = public/assets/shared
+	url = https://github.com/TeamPalmTree/assets.git
