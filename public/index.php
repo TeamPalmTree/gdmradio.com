@@ -24,7 +24,7 @@ define('DOCROOT', __DIR__.DIRECTORY_SEPARATOR);
 /**
  * Path to the application directory.
  */
-define('APPPATH', realpath(__DIR__.'/../fuel/gdmradio/').DIRECTORY_SEPARATOR);
+define('APPPATH', realpath(__DIR__.'/../fuel/app/').DIRECTORY_SEPARATOR);
 
 /**
  * Path to the default packages directory.
