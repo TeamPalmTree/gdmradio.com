@@ -25,3 +25,6 @@
 [submodule "fuel/app"]
 	path = fuel/app
 	url = https://github.com/TeamPalmTree/gdmradio
+[submodule "fuel/packages/shared"]
+	path = fuel/packages/shared
+	url = https://github.com/TeamPalmTree/shared
