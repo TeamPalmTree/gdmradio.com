@@ -16,9 +16,6 @@
 [submodule "fuel/packages/parser"]
 	path = fuel/packages/parser
 	url = https://github.com/fuel/parser
-[submodule "public/assets/shared"]
-	path = public/assets/shared
-	url = https://github.com/TeamPalmTree/assets.git
 [submodule "fuel/packages/less"]
 	path = fuel/packages/less
 	url = https://github.com/TeamPalmTree/fuel-less
@@ -28,3 +25,6 @@
 [submodule "fuel/packages/shared"]
 	path = fuel/packages/shared
 	url = https://github.com/TeamPalmTree/shared
+[submodule "public/assets/shared"]
+	path = public/assets/shared
+	url = https://github.com/TeamPalmTree/assets
