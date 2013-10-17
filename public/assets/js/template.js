@@ -67,10 +67,16 @@ function hook_gdmradio() {
 
     // playing
     ko.applyBindings(new gdmradio_playing_model(), document.getElementById('gdmradio-playing'));
+
+    /*// hook perceive
+    $('#gdmradio-listen-perceive').click(function() {
+        window.open('http://perceive.gdmradio.com','_blank','width=700,height=250,toolbar=no,location=no,status=no,scrollbars=no,menubar=no', true)
+    });*/
+
     // carousel
     $('.carousel').carousel({
         interval: 5000
-    })
+    });
 
 }
 
@@ -80,7 +86,7 @@ function hook_welcome() {
     // carousel
     $('.carousel').carousel({
         interval: 5000
-    })
+    });
 
 }
 
