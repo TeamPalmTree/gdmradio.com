@@ -95,6 +95,9 @@ function hook_welcome() {
 ///////////
 
 $(function() {
-    hook_gdmradio();
-    hook_welcome();
+    //hook_gdmradio();
+    //hook_welcome();
+
+    $('#login-menu input').click(function() { event.stopPropagation(); });
+
 });
