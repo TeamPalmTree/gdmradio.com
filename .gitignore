@@ -12,3 +12,4 @@ build
 .idea
 /fuel/vendor
 nbproject/
+/public/assets/img/uploads
