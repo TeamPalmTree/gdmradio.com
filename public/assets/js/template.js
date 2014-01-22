@@ -40,6 +40,11 @@ function gdmradio_player_model() {
     this.audio = new Audio();
     this.buffer_seconds = 5000;
 
+    // add event listener for playing
+    this.audio.addEventListener('play', function() {
+        this.playing(true);
+    }.bind(this));
+
     // css
     this.css = ko.computed(function() {
         if (this.buffering())
@@ -53,7 +58,7 @@ function gdmradio_player_model() {
     // poll
     this.poll = function() {
         $.ajax({
-            url: 'http://cloudcast.gdmradio.com/engine/status.json',
+            url: 'http://cloudcast.gdmradio.com/service/status.json',
             dataType: "json",
             crossDomain: true,
             success: function (status_js) {
@@ -86,9 +91,8 @@ function gdmradio_player_model() {
             this.buffering(false);
             // auto-play
             if (play) {
-                // play and set playing
+                // play audio (will fire playing above)
                 this.audio.play();
-                this.playing(true);
             }
         }.bind(this), this.buffer_seconds);
 
@@ -97,6 +101,7 @@ function gdmradio_player_model() {
     // stop
     this.stop = function() {
         // set source empty
+        this.audio.pause();
         this.audio.src = "";
         // set not playing and not buffering
         this.playing(false);
@@ -105,18 +110,14 @@ function gdmradio_player_model() {
 
     // play
     this.play = function() {
-
         // make sure we are not buffering
         if (this.buffering())
             return;
-
         // if not playing, buffer
-        if (!this.playing()) {
+        if (!this.playing())
             this.buffer(true);
-        } else {
+        else
             this.stop();
-        }
-
     }.bind(this);
 
     // buffer & play
@@ -299,14 +300,14 @@ function shows_index_model() {
     this.refresh = function() {
 
         // get single shows
-        $.get('http://cloudcast/service/single_shows.json', function (singles_shows) {
+        $.get('http://cloudcast.gdmradio.com/service/single_shows.json', function (singles_shows) {
             if (!singles_shows) return;
             ko.utils.arrayForEach(singles_shows, function(singles_show) {
                 this.single_shows.push(new show_model(singles_show));
             }.bind(this));
         }.bind(this));
         // get repeat shows days
-        $.get('http://cloudcast/service/show_repeat_days.json', function (repeat_days) {
+        $.get('http://cloudcast.gdmradio.com/service/show_repeat_days.json', function (repeat_days) {
             if (!repeat_days) return;
             ko.utils.arrayForEach(repeat_days, function(repeat_day) {
                 this.repeat_days.push(new show_day_model(repeat_day));
@@ -314,6 +315,13 @@ function shows_index_model() {
         }.bind(this));
 
     };
+
+    // scroll to a day
+    this.scroll_to_day = function(repeat_day) {
+        $('html, body').animate({
+            scrollTop: $('#' + repeat_day.day()).offset().top - 50
+        }, 1000);
+    }
 
     // initialize
     this.refresh();
@@ -432,7 +440,7 @@ function welcome_index_model() {
     this.refresh = function() {
 
         // get recent files
-        $.get('http://cloudcast/service/recent_files.json', function (recent_files) {
+        $.get('http://cloudcast.gdmradio.com/service/recent_files.json', function (recent_files) {
             if (!recent_files) return;
             ko.utils.arrayForEach(recent_files, function(recent_file) {
                 this.recent_files.push(ko.mapping.fromJS(recent_file));
@@ -500,7 +508,7 @@ function hook_welcome() {
 
     // carousel
     $('.carousel').carousel({
-        interval: 5000
+        interval: 10000
     });
 
 }
