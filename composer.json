@@ -20,7 +20,8 @@
         "monolog/monolog": "1.5.*",
         "fuelphp/upload": "2.0.1",
         "twbs/bootstrap": "3.0.2",
-        "facebook/php-sdk": "dev-master"
+        "facebook/php-sdk": "dev-master",
+        "kertz/twitteroauth": "dev-master"
     },
     "suggest": {
         "mustache/mustache": "Allow Mustache templating with the Parser package",

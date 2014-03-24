@@ -1,8 +1,5 @@
-/////////////////////
-// CAROUSEL MODELS //
-/////////////////////
-
-function carousel_model(carousel) {
+// carousel model
+function Carousel_Model(carousel) {
 
     // members
     this.id = ko.observable();
@@ -25,13 +22,13 @@ function carousel_model(carousel) {
 
 }
 
-/////////////////////
-// GDMRADIO MODELS //
-/////////////////////
+// gdmradio nav model
+function GDMRadio_Navigation_Model() {
 
-// gdmradio player
-function gdmradio_player_model() {
-
+    // self
+    var self = this;
+    // inherit
+    Navigation_Model.call(this);
     // members
     this.status = ko.observable();
     this.buffering = ko.observable(false);
@@ -40,35 +37,30 @@ function gdmradio_player_model() {
     this.audio = new Audio();
     this.buffer_seconds = 5000;
 
-    // add event listener for playing
-    this.audio.addEventListener('play', function() {
-        this.playing(true);
-    }.bind(this));
-
     // css
     this.css = ko.computed(function() {
-        if (this.buffering())
+        if (self.buffering())
             return 'glyphicon-transfer';
-        else if (!this.playing())
+        else if (!self.playing())
             return 'glyphicon-play';
         else
             return 'glyphicon-stop';
-    }.bind(this));
+    });
 
-    // poll
-    this.poll = function() {
+    // refresh
+    this.refresh = function() {
         $.ajax({
             url: 'http://cloudcast.gdmradio.com/service/status.json',
             dataType: "json",
             crossDomain: true,
             success: function (status_js) {
-                if (!this.status())
-                    this.status(new status_model(status_js));
+                if (!self.status())
+                    self.status(new Status_Model(status_js));
                 else
-                    this.status().update(status_js);
-            }.bind(this)
+                    self.status().update(status_js);
+            }
         });
-    }.bind(this);
+    };
 
     // listen
     this.listen = function() {
@@ -80,64 +72,75 @@ function gdmradio_player_model() {
     this.buffer = function(play) {
 
         // set source
-        this.audio.src = 'http://icecast.gdmradio.com:8000/128.mp3';
+        self.audio.src = 'http://icecast.gdmradio.com:8000/128.mp3';
         // load source
-        this.audio.load();
+        self.audio.load();
         // set buffering
-        this.buffering(true);
+        self.buffering(true);
         // set audio available after a small time
         setTimeout(function() {
             // done buffering
-            this.buffering(false);
+            self.buffering(false);
             // auto-play
             if (play) {
                 // play audio (will fire playing above)
-                this.audio.play();
+                self.audio.play();
             }
-        }.bind(this), this.buffer_seconds);
+        }, self.buffer_seconds);
 
-    }.bind(this);
+    };
 
     // stop
     this.stop = function() {
         // set source empty
-        this.audio.pause();
-        this.audio.src = "";
+        self.audio.pause();
+        self.audio.src = "";
         // set not playing and not buffering
-        this.playing(false);
-        this.buffering(false);
-    }.bind(this);
+        self.playing(false);
+        self.buffering(false);
+    };
 
     // play
     this.play = function() {
         // make sure we are not buffering
-        if (this.buffering())
+        if (self.buffering())
             return;
         // if not playing, buffer
-        if (!this.playing())
-            this.buffer(true);
+        if (!self.playing())
+            self.buffer(true);
         else
-            this.stop();
-    }.bind(this);
+            self.stop();
+    };
 
-    // buffer & play
-    this.buffer(true);
-    // poll engine for status
-     setInterval(function() {
-         this.poll();
-     }.bind(this), 5000);
-     // initial poll
-     this.poll();
+    // initialize
+    this.initialize = function() {
 
+        // call base
+        Navigation_Model.prototype.initialize.call(self);
+        // add event listener for playing
+        self.audio.addEventListener('play', function() {
+            self.playing(true);
+        });
+
+        // buffer & play
+        self.buffer(true);
+        // poll engine for status
+        setInterval(function() {
+            self.refresh();
+        }, 5000);
+        // initial poll
+        self.refresh();
+
+    };
 
 };
 
-/////////////////
-// POST MODELS //
-/////////////////
+// gdmradio nav model prototype
+GDMRadio_Navigation_Model.prototype = Object.create(Navigation_Model.prototype);
+GDMRadio_Navigation_Model.prototype.constructor = GDMRadio_Navigation_Model;
 
 // post comment
-function post_comment_model(post_comment) {
+function Post_Comment_Model(post_comment) {
 
     // members
     this.id = ko.observable();
@@ -153,8 +156,12 @@ function post_comment_model(post_comment) {
 };
 
 // post form
-function post_form_model() {
+function Posts_Form_Model() {
 
+    // self
+    var self = this;
+    // inherit
+    Component_Model.call(this);
     // members
     this.post = ko.observable();
     this.saving = ko.observable(false);
@@ -165,43 +172,44 @@ function post_form_model() {
         // get post from url
         $.post(document.URL + '.json', function (post) {
             if (!post) return;
-            this.post(new post_model(post));
-        }.bind(this));
-    }.bind(this);
+            self.post(new Post_Model(post));
+        });
+    };
 
     // save
     this.save = function() {
         // verify not already saving
-        if (this.saving()) return;
+        if (self.saving()) return;
         // set saving
-        this.saving(true);
+        self.saving(true);
         // save stream
-        $.post(document.URL + '.json', ko.mapping.toJSON(this.post()), function (data, status, request) {
+        $.post(document.URL + '.json', ko.mapping.toJSON(self.post()), function (data, status, request) {
                 // check for validation errors
                 if (request.getResponseHeader('errors')) {
-                    this.errors(data);
-                    this.saving(false);
+                    self.errors(data);
+                    self.saving(false);
                 } else {
                     // redirect to shows
                     window.location = '/posts';
                 }
-            }.bind(this)).fail(function() {
-                this.saving(false);
-            }.bind(this));
-    }.bind(this);
+            }).fail(function() {
+                self.saving(false);
+            });
+    };
 
     // cancel
     this.cancel = function() {
         window.location = '/posts';
     };
 
-    // initialize
-    this.refresh();
+};
 
-}
+// posts form model prototype
+Posts_Form_Model.prototype = Object.create(Component_Model.prototype);
+Posts_Form_Model.prototype.constructor = Posts_Form_Model;
 
 // post
-function post_model(post) {
+function Post_Model(post) {
 
     // members
     this.id = ko.observable();
@@ -226,11 +234,15 @@ function post_model(post) {
 };
 
 // post view
-function post_view_model() {
+function Posts_View_Model() {
 
+    // self
+    var self = this;
+    // inherit
+    Component_Model.call(this);
     // members
     this.post = ko.observable();
-    this.post_comment = ko.observable(new post_comment_model());
+    this.post_comment = ko.observable(new Post_Comment_Model());
     this.commenting = ko.observable(false);
     this.errors = ko.observable();
 
@@ -239,49 +251,46 @@ function post_view_model() {
         // get stream from url
         $.post(document.URL + '.json', function (post) {
             if (!post) return;
-            this.post(new post_model(post));
-        }.bind(this));
-    }.bind(this);
+            self.post(new Post_Model(post));
+        });
+    };
 
     // save
     this.comment = function() {
         // verify not already commenting
-        if (this.commenting()) return;
+        if (self.commenting()) return;
         // set commenting
-        this.commenting(true);
+        self.commenting(true);
         // save post comment
-        $.post('/posts/comment/' + this.post().id() + '.json', ko.mapping.toJSON(this.post_comment()), function (data, status, request) {
+        $.post('/posts/comment/' + self.post().id() + '.json', ko.mapping.toJSON(self.post_comment()), function (data, status, request) {
             // check for validation errors
             if (request.getResponseHeader('errors')) {
-                this.errors(data);
+                self.errors(data);
             } else {
                 // add to post comments
-                this.post().post_comments.unshift(new post_comment_model(data));
+                self.post().post_comments.unshift(new Post_Comment_Model(data));
                 // clear editor
-                this.post_comment().comment('');
+                self.post_comment().comment('');
             }
             // set not commenting
-            this.commenting(false);
-        }.bind(this)).fail(function() {
-            this.commenting(false);
-        }.bind(this));
-    }.bind(this);
+            self.commenting(false);
+        }).fail(function() {
+            self.commenting(false);
+        });
+    };
 
-    // initialize
-    this.refresh();
+};
 
-}
-
-/////////////////
-// SHOW MODELS //
-/////////////////
+// posts view model prototype
+Posts_View_Model.prototype = Object.create(Component_Model.prototype);
+Posts_View_Model.prototype.constructor = Posts_View_Model;
 
 // show day
-function show_day_model(show_day) {
+function Show_Day_Model(show_day) {
     ko.mapping.fromJS(show_day, {
         'shows': {
             create: function(options) {
-                var show = new show_model(options.data);
+                var show = new Show_Model(options.data);
                 show.show_full_date(false);
                 return show;
             }
@@ -290,8 +299,12 @@ function show_day_model(show_day) {
 };
 
 // shows index model
-function shows_index_model() {
+function Shows_Index_Model() {
 
+    // self
+    var self = this;
+    // inherit
+    Component_Model.call(this);
     // members
     this.single_shows = ko.observableArray();
     this.repeat_days = ko.observableArray();
@@ -299,20 +312,23 @@ function shows_index_model() {
     // refresh
     this.refresh = function() {
 
+        // clear out arrays
+        self.single_shows.removeAll();
+        self.repeat_days.removeAll();
         // get single shows
         $.get('http://cloudcast.gdmradio.com/service/single_shows.json', function (singles_shows) {
             if (!singles_shows) return;
             ko.utils.arrayForEach(singles_shows, function(singles_show) {
-                this.single_shows.push(new show_model(singles_show));
+                self.single_shows.push(new Show_Model(singles_show));
             }.bind(this));
         }.bind(this));
         // get repeat shows days
         $.get('http://cloudcast.gdmradio.com/service/show_repeat_days.json', function (repeat_days) {
             if (!repeat_days) return;
             ko.utils.arrayForEach(repeat_days, function(repeat_day) {
-                this.repeat_days.push(new show_day_model(repeat_day));
-            }.bind(this));
-        }.bind(this));
+                self.repeat_days.push(new Show_Day_Model(repeat_day));
+            });
+        });
 
     };
 
@@ -323,13 +339,14 @@ function shows_index_model() {
         }, 1000);
     }
 
-    // initialize
-    this.refresh();
-
 };
 
+// posts view model prototype
+Shows_Index_Model.prototype = Object.create(Component_Model.prototype);
+Shows_Index_Model.prototype.constructor = Shows_Index_Model;
+
 // show
-function show_model(show) {
+function Show_Model(show) {
     this.show_full_date = ko.observable(true);
     ko.mapping.fromJS(show, {}, this);
 };
@@ -339,8 +356,10 @@ function show_model(show) {
 ///////////////////
 
 // status
-function status_model(status) {
+function Status_Model(status) {
 
+    // self
+    var self = this;
     // standard members
     this.current_file_artist = ko.observable();
     this.current_file_title = ko.observable();
@@ -350,26 +369,26 @@ function status_model(status) {
     // update
     this.update = function(status) {
         // truncate artist
-        if (status.current_file_artist.length > this.max_string_length)
-            status.current_file_artist = status.current_file_artist.substring(0, this.max_string_length) + '...';
+        if (status.current_file_artist.length > self.max_string_length)
+            status.current_file_artist = status.current_file_artist.substring(0, self.max_string_length) + '...';
         // truncate artist
-        if (status.current_file_title.length > this.max_string_length)
-            status.current_file_title = status.current_file_title.substring(0, this.max_string_length) + '...';
+        if (status.current_file_title.length > self.max_string_length)
+            status.current_file_title = status.current_file_title.substring(0, self.max_string_length) + '...';
         // mapping
-        ko.mapping.fromJS(status, null, this);
-    }.bind(this);
+        ko.mapping.fromJS(status, null, self);
+    };
 
     // initialize
     this.update(status);
 
 };
 
-////////////////////
-// WELCOME MODELS //
-////////////////////
+function Welcome_Form_Model() {
 
-function welcome_form_model() {
-
+    // self
+    var self = this;
+    // inherit
+    Component_Model.call(this);
     // members
     this.carousels = ko.observableArray();
     this.saving = ko.observable(false);
@@ -380,59 +399,65 @@ function welcome_form_model() {
         // get post from url
         $.post(document.URL + '.json', function (carousels) {
             if (!carousels) return;
-            this.carousels.removeAll();
+            self.carousels.removeAll();
             ko.utils.arrayForEach(carousels, function(carousel) {
-                this.carousels.push(new carousel_model(carousel));
-            }.bind(this));
-        }.bind(this));
-    }.bind(this);
+                self.carousels.push(new Carousel_Model(carousel));
+            });
+        });
+    };
 
     // save
     this.save = function() {
         // verify not already saving
-        if (this.saving()) return;
+        if (self.saving()) return;
         // set saving
-        this.saving(true);
+        self.saving(true);
         // save stream
         $.post(document.URL + '.json', ko.mapping.toJSON(this.carousels()), function (data, status, request) {
                 // check for validation errors
                 if (request.getResponseHeader('errors')) {
-                    this.errors(data);
-                    this.saving(false);
+                    self.errors(data);
+                    self.saving(false);
                 } else {
                     // update carousels
-                    this.carousels.removeAll();
+                    self.carousels.removeAll();
                     ko.utils.arrayForEach(data, function(carousel) {
-                        this.carousels.push(new carousel_model(carousel));
-                    }.bind(this));
+                        self.carousels.push(new Carousel_Model(carousel));
+                    });
                 }
-            }.bind(this)).fail(function() {
-                this.saving(false);
-            }.bind(this));
-    }.bind(this);
+            }).fail(function() {
+                self.saving(false);
+            });
+    };
 
     // add carousel
     this.add_carousel = function() {
-        this.carousels.push(new carousel_model());
-    }.bind(this);
+        self.carousels.push(new Carousel_Model());
+    };
 
     // remove carousel
     this.remove_carousel = function(carousel) {
-        this.carousels.remove(carousel);
-    }.bind(this);
+        self.carousels.remove(carousel);
+    };
 
     // cancel
     this.cancel = function() {
         window.location = '/';
     };
 
-    // initialize
-    this.refresh();
-
 };
 
-function welcome_index_model() {
+// welcome form model prototype
+Welcome_Form_Model.prototype = Object.create(Component_Model.prototype);
+Welcome_Form_Model.prototype.constructor = Welcome_Form_Model;
 
+// welcome index model
+function Welcome_Index_Model() {
+
+    // self
+    var self = this;
+    // inherit component model
+    Component_Model.call(this);
     // members
     this.recent_files = ko.observableArray();
 
@@ -442,76 +467,19 @@ function welcome_index_model() {
         // get recent files
         $.get('http://cloudcast.gdmradio.com/service/recent_files.json', function (recent_files) {
             if (!recent_files) return;
+            self.recent_files.removeAll();
             ko.utils.arrayForEach(recent_files, function(recent_file) {
-                this.recent_files.push(ko.mapping.fromJS(recent_file));
-            }.bind(this));
-        }.bind(this));
+                self.recent_files.push(ko.mapping.fromJS(recent_file));
+            });
+        });
 
     };
 
-    // initialize
-    this.refresh();
-
 };
 
-///////////
-// HOOKS //
-///////////
-
-// gdmradio
-function hook_common() {
-
-    // player
-    ko.applyBindings(new gdmradio_player_model(), document.getElementById('gdmradio-player'));
-    // login inputs
-    $('#login-menu input').click(function() { event.stopPropagation(); });
-
-}
-
-// posts
-function hook_posts() {
-
-    // form
-    var post_form_element = document.getElementById('post-form');
-    if (post_form_element)
-        ko.applyBindings(new post_form_model(), post_form_element);
-
-    // view
-    var post_view_element = document.getElementById('post-view');
-    if (post_view_element)
-        ko.applyBindings(new post_view_model(), post_view_element);
-
-}
-
-// shows
-function hook_shows() {
-
-    // index
-    var shows_index_element = document.getElementById('shows-index');
-    if (shows_index_element)
-        ko.applyBindings(new shows_index_model(), shows_index_element);
-
-}
-
-// welcome
-function hook_welcome() {
-
-    // index
-    var welcome_index_element = document.getElementById('welcome-index');
-    if (welcome_index_element)
-        ko.applyBindings(new welcome_index_model(), welcome_index_element);
-
-    // form
-    var welcome_form_element = document.getElementById('welcome-form');
-    if (welcome_form_element)
-        ko.applyBindings(new welcome_form_model(), welcome_form_element);
-
-    // carousel
-    $('.carousel').carousel({
-        interval: 10000
-    });
-
-}
+// welcome index model prototype
+Welcome_Index_Model.prototype = Object.create(Component_Model.prototype);
+Welcome_Index_Model.prototype.constructor = Welcome_Index_Model;
 
 ///////////
 // READY //
@@ -519,9 +487,9 @@ function hook_welcome() {
 
 $(function() {
 
-    hook_welcome();
-    hook_posts();
-    hook_shows();
-    hook_common();
+    // set up standard model
+    window.standard.add_component('navigation', 'GDMRadio_Navigation_Model');
+    // login inputs
+    $('#login-menu input').click(function() { event.stopPropagation(); });
 
 });

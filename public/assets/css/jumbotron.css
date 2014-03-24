@@ -1,0 +1,21 @@
+.gdmradio-jumbotron {
+  display: flex;
+  flex-direction: row;
+  flex-flow: row;
+}
+.gdmradio-jumbotron-left {
+  flex: 0.7;
+  display: flex;
+  flex-direction: column;
+  flex-flow: column;
+}
+.gdmradio-jumbotron .carousel {
+  flex: 0.7;
+  margin-bottom: 5px;
+}
+.gdmradio-jumbotron-news {
+  background-color: red;
+}
+.gdmradio-jumbotron-right {
+  background-color: green;
+}
