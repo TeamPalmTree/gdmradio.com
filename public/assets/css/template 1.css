@@ -1,7 +1,7 @@
 .gdmradio-header {
   position: relative;
   width: 100%;
-  height: 125px;
+  height: 160px;
   flex: none;
   background-color: rgba(52, 26, 66, 0.7);
   border-bottom: 1px solid #974fbb;
@@ -15,7 +15,7 @@
   position: relative;
   background-image: url('/assets/img/logo.png');
   background-repeat: no-repeat;
-  height: 125px;
+  height: 150px;
   z-index: 100;
 }
 .gdmradio-header-icons {

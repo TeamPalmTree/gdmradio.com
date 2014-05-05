@@ -475,6 +475,8 @@ function Welcome_Index_Model() {
 
     };
 
+
+
 };
 
 // welcome index model prototype
@@ -487,8 +489,6 @@ Welcome_Index_Model.prototype.constructor = Welcome_Index_Model;
 
 $(function() {
 
-    // set up standard model
-    window.standard.add_component('navigation', 'GDMRadio_Navigation_Model');
     // login inputs
     $('#login-menu input').click(function() { event.stopPropagation(); });
 

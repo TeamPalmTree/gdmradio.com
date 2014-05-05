@@ -1,0 +1,17 @@
+.one {
+  color: one;
+}
+.two {
+  color: two;
+}
+.three {
+  color: three;
+}
+.multi-foo {
+  color: two;
+  color: three;
+}
+.multi-baz {
+  color: two;
+  color: three;
+}
